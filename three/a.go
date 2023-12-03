@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -152,6 +153,7 @@ func main() {
 	matrix := inputToMatrix(input)
 
 	sum := 0
+	gearCoordsToNums := map[[2]int][]int{}
 
 	for y := 0; y < len(matrix); y++ {
 		for x := 0; x < len(matrix[0]); x++ {
@@ -163,10 +165,15 @@ func main() {
 					ln = i - x
 					nstr = append(nstr, matrix[y][i])
 				}
-				if isAdjacentToSymbol(matrix, x, y, ln) {
+
+				gearCoords, isAdjacent := isAdjacentToSymbol(matrix, x, y, ln)
+				if isAdjacent {
 					n, err := strconv.Atoi(string(nstr))
 					if err != nil {
 						panic("insane")
+					}
+					for _, coord := range gearCoords {
+						gearCoordsToNums[coord] = append(gearCoordsToNums[coord], n)
 					}
 					sum += n
 				}
@@ -176,7 +183,18 @@ func main() {
 		}
 	}
 
-	println(sum)
+	fmt.Println(sum)
+
+	gearRatioSum := 0
+	for _, ns := range gearCoordsToNums {
+		if len(ns) != 2 {
+			continue
+		}
+
+		gearRatioSum += ns[0] * ns[1]
+	}
+
+	println(gearRatioSum)
 }
 
 func inputToMatrix(s string) [][]rune {
@@ -193,16 +211,27 @@ func inputToMatrix(s string) [][]rune {
 	return matrix
 }
 
-func isAdjacentToSymbol(matrix [][]rune, startX, startY, length int) bool {
+func isAdjacentToSymbol(matrix [][]rune, startX, startY, length int) ([][2]int, bool) {
+	gearCoords := [][2]int{}
+	isAdjacent := false
+
 	for x := startX - 1; x <= startX+length+1; x++ {
 		for y := startY - 1; y < startY+2; y++ {
-			if inBounds(len(matrix[0]), len(matrix), x, y) && !isNumber(matrix[y][x]) && matrix[y][x] != 46 {
-				return true
+			if !inBounds(len(matrix[0]), len(matrix), x, y) {
+				continue
+			}
+
+			if matrix[y][x] == 42 {
+				gearCoords = append(gearCoords, [2]int{x, y})
+			}
+
+			if !isNumber(matrix[y][x]) && matrix[y][x] != 46 {
+				isAdjacent = true
 			}
 		}
 	}
 
-	return false
+	return gearCoords, isAdjacent
 }
 
 func inBounds(width, height, x, y int) bool {

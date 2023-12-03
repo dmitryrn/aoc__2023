@@ -61,7 +61,7 @@ func Test_isAdjacentToSymbol(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := isAdjacentToSymbol(tt.args.matrix, tt.args.startX, tt.args.startY, tt.args.length); got != tt.want {
+			if _, got := isAdjacentToSymbol(tt.args.matrix, tt.args.startX, tt.args.startY, tt.args.length); got != tt.want {
 				t.Errorf("isAdjacentToSymbol() = %v, want %v", got, tt.want)
 			}
 		})
