@@ -10,7 +10,7 @@ func Test_isAdjacentToSymbol(t *testing.T) {
 		length int
 	}
 
-    m1 := inputToMatrix(`
+	m1 := inputToMatrix(`
 467..114..
 ...*......
 ..35..633.

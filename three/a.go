@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"strings"
 )
 
@@ -18,23 +19,30 @@ const input = `
 `
 
 func main() {
-    matrix := inputToMatrix(input)
+	matrix := inputToMatrix(input)
 
 	sum := 0
 
 	for y := 0; y < len(matrix); y++ {
 		for x := 0; x < len(matrix[0]); x++ {
+			println(x, y)
 			if isNumber(matrix[y][x]) {
 				ln := 0
-				for i := x; ; i++ {
-					if !isNumber(matrix[y][x]) {
-						ln = i - x
-						break
-					}
+				nstr := make([]rune, 1, 3) // could be on stack if used an array
+				nstr[0] = matrix[y][x]
+				for i := x + 1; inBounds(len(matrix[0]), len(matrix), x, y) && isNumber(matrix[y][i]); i++ {
+					ln = i - x
+					nstr = append(nstr, matrix[y][i])
 				}
 				if isAdjacentToSymbol(matrix, x, y, ln) {
-					sum += getNum()
+					n, err := strconv.Atoi(string(nstr))
+					if err != nil {
+						panic("insane")
+					}
+					sum += n
 				}
+
+				x += ln + 1
 			}
 		}
 	}
@@ -52,18 +60,13 @@ func inputToMatrix(s string) [][]rune {
 	for i, line := range lines {
 		matrix[i] = []rune(line)
 	}
-    
-    return matrix
-}
 
-func getNum() int {
-	panic("impl")
+	return matrix
 }
 
 func isAdjacentToSymbol(matrix [][]rune, startX, startY, length int) bool {
 	for x := startX - 1; x <= startX+length+1; x++ {
 		for y := startY - 1; y < startY+2; y++ {
-            println(x, y)
 			if inBounds(len(matrix[0]), len(matrix), x, y) && !isNumber(matrix[y][x]) && matrix[y][x] != 46 {
 				return true
 			}

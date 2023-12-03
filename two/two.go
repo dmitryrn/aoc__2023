@@ -170,5 +170,5 @@ func getPower(s string) int {
 		}
 	}
 
-    return rmm*gmm*bmm
+	return rmm * gmm * bmm
 }
