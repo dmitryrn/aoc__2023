@@ -12,32 +12,19 @@ func Test_parseGame(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want game
+		want int
 	}{
         {
             name: "1",
             args: args{
-                s: "Game 10: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green",
+                s: "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green",
             },
-            want: game{
-                id: 10,
-                possible: true,
-            },
-        },
-        {
-            name: "2",
-            args: args{
-                s: "Game 10: 33 blue, 4 red; 1 red, 2 green, 6 blue; 2 green",
-            },
-            want: game{
-                id: 10,
-                possible: false,
-            },
+            want: 48,
         },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := parseGame(tt.args.s); !reflect.DeepEqual(got, tt.want) {
+			if got := getPower(tt.args.s); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("parseGame() = %v, want %v", got, tt.want)
 			}
 		})

@@ -113,39 +113,31 @@ func main() {
 
 	sum := 0
 	for _, line := range strings.Split(trimmed, "\n") {
-		g := parseGame(line)
-		if g.possible {
-			sum += g.id
-		}
+		sum += getPower(line)
 	}
 
 	println(sum)
 }
 
-func parseGame(s string) game {
-	g := game{
-		possible: true,
-	}
-
+func getPower(s string) int {
 	i := strings.Index(s, ":")
 	if i == -1 {
 		panic("insane")
 	}
-	idstr := s[5:i]
-	var err error
-	g.id, err = strconv.Atoi(idstr)
-	if err != nil {
-		panic("insane")
-	}
 
-	trimmed := s[7+len(idstr):]
+	trimmed := s[i+2:]
 	sets := strings.Split(trimmed, "; ")
+
+	rmm := -1
+	gmm := -1
+	bmm := -1
+
 	for _, set := range sets {
 		items := strings.Split(set, ", ")
 
-        rm := -1
-        gm := -1
-        bm := -1
+		rm := -1
+		gm := -1
+		bm := -1
 
 		for _, item := range items {
 			parts := strings.Split(item, " ")
@@ -156,22 +148,27 @@ func parseGame(s string) game {
 				panic("insane")
 			}
 
-			if color == "blue" && n > 14 {
-				g.possible = false
+			if color == "red" && n > rm {
+				rm = n
 			}
-			if color == "green" && n > 13 {
-				g.possible = false
+			if color == "green" && n > gm {
+				gm = n
 			}
-			if color == "red" && n > 12 {
-				g.possible = false
+			if color == "blue" && n > bm {
+				bm = n
 			}
+		}
+
+		if rm > rmm {
+			rmm = rm
+		}
+		if gm > gmm {
+			gmm = gm
+		}
+		if bm > bmm {
+			bmm = bm
 		}
 	}
 
-	return g
-}
-
-type game struct {
-	id       int
-	possible bool
+    return rmm*gmm*bmm
 }
