@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 fn main() {
     let input = "
@@ -10,14 +10,6 @@ Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
 Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 ";
 
-    // go through cards
-    //   parse each card
-    // go through all cards
-    //   copy each of matched card
-    // go through matched cards
-    //   sum up all cards i have
-
-    let mut parsed_cards: HashMap<isize, Card> = HashMap::new();
     let lines = input.trim().lines();
     let mut card_to_count: Vec<usize> = vec![1; lines.clone().count()];
 
@@ -25,25 +17,14 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
     for line in lines {
         i += 1;
 
-        let card: Card;
-        let card_opt = parsed_cards.get(&i);
-        if card_opt.is_none() {
-            card = parse_card(line);
-            parsed_cards.insert(i, card);
-        } else {
-            card = *card_opt.unwrap();
-        }
+        let card = parse_card(line);
 
         for j in (i + 1)..(i + 1 + card.match_count as isize) {
             let copies_of_this_card = card_to_count[i as usize] - 1;
-            if j + 1 == 5 {
-                println!("adding to 5");
-            }
             card_to_count[j as usize] += 1 + copies_of_this_card;
         }
     }
 
-    println!("{:?}", card_to_count);
     let total: usize = card_to_count.iter().sum();
     println!("{}", total)
 }
