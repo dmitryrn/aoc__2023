@@ -214,7 +214,13 @@ humidity-to-location map:
     let mut lines = input.trim().lines().peekable();
 
     let seeds_line = lines.next().unwrap();
-    let seeds = parse_seeds(seeds_line);
+    let ranges: Vec<usize> = seeds_line
+        .split_once(": ")
+        .unwrap()
+        .1
+        .split(' ')
+        .map(|x| x.parse::<usize>().unwrap())
+        .collect();
 
     let mut mappings: Vec<Mapping> = vec![];
 
@@ -227,14 +233,33 @@ humidity-to-location map:
         }
     }
 
-    let mut locations: Vec<usize> = vec![];
-    for seed in seeds {
-        let location = find_location(&mappings, seed);
-        locations.push(location);
+    let mut smallest_location: usize = usize::MAX;
+
+    for i in (0..ranges.len()).step_by(2) {
+        let from = ranges[i];
+        let to = ranges[i + 1];
+
+        // todo: merge ranges
+        for seed in from..(from + to) {
+            let location = find_location(&mappings, seed);
+            if location < smallest_location {
+                smallest_location = location;
+            }
+        }
     }
 
-    let smallest_location = locations.iter().min().unwrap();
     println!("{}", smallest_location);
+}
+
+// todo: test
+fn is_intersect(range1: (usize, usize), range2: (usize, usize)) -> bool {
+    if range1.1 > range2.0 {
+        return true;
+    }
+    if range2.1 > range1.0 {
+        return true;
+    }
+    return false;
 }
 
 fn find_location(mappings: &Vec<Mapping>, seed: usize) -> usize {
@@ -334,17 +359,32 @@ fn name() {
 }
 
 fn parse_seeds(line: &str) -> Vec<usize> {
-    let seeds: Vec<usize> = line
+    let ranges: Vec<usize> = line
         .split_once(": ")
         .unwrap()
         .1
         .split(' ')
         .map(|x| x.parse::<usize>().unwrap())
         .collect();
-    return seeds;
+
+    let mut seeds = HashSet::new();
+
+    for i in (0..ranges.len()).step_by(2) {
+        let from = ranges[i];
+        let to = ranges[i + 1];
+
+        for seed in from..(from + to) {
+            seeds.insert(seed);
+        }
+    }
+
+    return seeds.into_iter().collect();
 }
 
 #[test]
 fn test_parse_seeds() {
-    assert_eq!(parse_seeds("seeds: 79 14 55 13"), vec![79, 14, 55, 13]);
+    let mut a = parse_seeds("seeds: 79 2 55 2");
+    let b = vec![55, 56, 79, 80];
+    a.sort();
+    assert_eq!(a, b);
 }
