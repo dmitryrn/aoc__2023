@@ -216,7 +216,7 @@ humidity-to-location map:
     let seeds_line = lines.next().unwrap();
     let seeds = parse_seeds(seeds_line);
 
-    let mut mappings: Vec<mapping> = vec![];
+    let mut mappings: Vec<Mapping> = vec![];
 
     lines.next();
     loop {
@@ -237,7 +237,7 @@ humidity-to-location map:
     println!("{}", smallest_location);
 }
 
-fn find_location(mappings: &Vec<mapping>, seed: usize) -> usize {
+fn find_location(mappings: &Vec<Mapping>, seed: usize) -> usize {
     let mut item = seed;
     for mapping in mappings {
         item = mapping.get(item);
@@ -246,26 +246,25 @@ fn find_location(mappings: &Vec<mapping>, seed: usize) -> usize {
 }
 
 #[derive(Debug, Default, PartialEq)]
-struct mapping {
+struct Mapping {
     src: String,
     dst: String,
 
-    ranges: Vec<range>,
+    ranges: Vec<Range>,
 }
 
 #[derive(Debug, PartialEq)]
-struct range {
+struct Range {
     from: usize,
     to: usize,
     diff: isize,
 }
 
-fn parse_mapping(iter: &mut std::iter::Peekable<Lines>) -> mapping {
+fn parse_mapping(iter: &mut std::iter::Peekable<Lines>) -> Mapping {
     let top = iter.next().unwrap();
-    println!("top {}", top);
     let spl = top.split_at(top.len() - 5).0.split_once("-to-").unwrap();
 
-    let mut m = mapping::default();
+    let mut m = Mapping::default();
     m.src = spl.0.into();
     m.dst = spl.1.into();
 
@@ -274,7 +273,6 @@ fn parse_mapping(iter: &mut std::iter::Peekable<Lines>) -> mapping {
         if line.is_none() || line.unwrap().is_empty() {
             break;
         }
-        println!("line {}", line.unwrap());
 
         let nums: Vec<usize> = line
             .unwrap()
@@ -285,7 +283,7 @@ fn parse_mapping(iter: &mut std::iter::Peekable<Lines>) -> mapping {
             panic!("nope")
         }
 
-        m.ranges.push(range {
+        m.ranges.push(Range {
             from: nums[1],
             to: nums[1] + nums[2],
             diff: nums[0] as isize - nums[1] as isize,
@@ -295,7 +293,7 @@ fn parse_mapping(iter: &mut std::iter::Peekable<Lines>) -> mapping {
     return m;
 }
 
-impl mapping {
+impl Mapping {
     fn get(&self, item: usize) -> usize {
         for r in self.ranges.iter() {
             if item >= r.from && item < r.to {
@@ -316,16 +314,16 @@ fn name() {
     .peekable();
     assert_eq!(
         parse_mapping(&mut lines),
-        mapping {
+        Mapping {
             src: "seed".into(),
             dst: "soil".into(),
             ranges: vec![
-                range {
+                Range {
                     from: 98,
                     to: 100,
                     diff: -48,
                 },
-                range {
+                Range {
                     from: 50,
                     to: 98,
                     diff: 2,
