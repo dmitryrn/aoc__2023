@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+// THIS IS DAY 4
+
 fn main() {
     let input = "
 Card   1: 66 92  4 54 39 76 49 27 61 56 | 66 59 85 54 61 86 37 49  6 18 81 39  4 56  2 48 76 72 71 25 27 67 10 92 13
