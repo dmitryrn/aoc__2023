@@ -1,79 +1,51 @@
 package main
 
 import (
+	"math"
 	"strconv"
-	"strings"
 )
 
-const input = `
-Time:        61     70     90     66
-Distance:   643   1184   1362   1041
-`
+var input = []byte(`Time:        61     70     90     66
+Distance:   643   1184   1362   1041`)
 
 func main() {
-	trimmed := strings.TrimSpace(input)
-
-	parts := strings.Split(trimmed, "\n")
-	timeLine := parts[0]
-	distanceLine := parts[1]
-
-	time := parseLinePt2(timeLine)
-	record := parseLinePt2(distanceLine)
-
-	ways := 0
-
-	for i := 1; i < time; i++ {
-		speed := i
-		remainingTime := time - i
-		distanceTraveled := speed * remainingTime
-
-		// println(speed, remainingTime, distanceTraveled)
-
-		if distanceTraveled > record {
-			ways++
-		}
-		if ways > 0 && distanceTraveled < record {
-			break
-		}
-	}
-
-	println(ways)
+	pt2()
 }
 
-func lineToArr(str string) []int {
-	parts := strings.Split(str, " ")
-	result := []int{}
+func pt2() {
+	time, record := parseInputPt2(input)
 
-	for i := 1; i < len(parts); i++ {
-		if len(parts[i]) == 0 {
-			continue
-		}
-		n, err := strconv.Atoi(strings.TrimSpace(parts[i]))
-		if err != nil {
-			panic(err)
-		}
-
-		result = append(result, n)
-	}
-
-	return result
+	(solve(time, record))
 }
 
-func parseLinePt2(str string) int {
-	parts := strings.Split(str, " ")
-	result := ""
+func solve(t, d uint64) uint64 {
+	disc := float64(t*t - 4*d)
+	disc = math.Sqrt(float64(disc)) - 2.
+	upper := math.Ceil((float64(t) + disc) / 2.)
+	lower := math.Floor((float64(t) - disc) / 2.)
+	return uint64(upper-lower) + 1
+}
 
-	for i := 1; i < len(parts); i++ {
-		if len(parts[i]) == 0 {
+func parseInputPt2(input []byte) (uint64, uint64) {
+	timeStr := make([]byte, 0, 4*4)
+	distanceStr := make([]byte, 0, 4*4)
+	first := true
+	for i := 0; i < len(input); i++ {
+		if input[i] > 47 && input[i] < 58 {
+			if first {
+				timeStr = append(timeStr, input[i])
+			} else {
+				distanceStr = append(distanceStr, input[i])
+			}
 			continue
 		}
-
-		result += parts[i]
+		if input[i] == 0xa {
+			first = false
+		}
 	}
 
-	n, err := strconv.Atoi(result)
-	if err != nil {
-		panic(err)
-	}
-	return n
+	time, _ := strconv.ParseUint(string(timeStr), 10, 64)
+	distance, _ := strconv.ParseUint(string(distanceStr), 10, 64)
+
+	return time, distance
 }
