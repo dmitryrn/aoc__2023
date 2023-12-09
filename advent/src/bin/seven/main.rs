@@ -1,4 +1,7 @@
-use std::{cmp::Ordering, collections::HashMap};
+use std::{
+    cmp::Ordering,
+    collections::{hash_map, HashMap},
+};
 
 fn main() {
     let input = "T6JTT 716
@@ -1012,7 +1015,6 @@ JJ33J 281
     cards.sort_unstable();
     let mut result = 0;
     for (i, c) in cards.iter().enumerate() {
-        println!("{} {}", c.bid, i + 1);
         result += c.bid * (i + 1);
     }
     // dbg!(cards);
@@ -1039,10 +1041,10 @@ impl From<&str> for Card {
                 }
                 let n = match b {
                     b'T' => 10,
-                    b'J' => 11,
                     b'Q' => 12,
                     b'K' => 13,
                     b'A' => 14,
+                    b'J' => 1,
                     _ => panic!("bad"),
                 };
                 cards[i] = n;
@@ -1052,7 +1054,6 @@ impl From<&str> for Card {
                 continue;
             }
             if i > 5 {
-                dbg!(str);
                 bid_str[i - 6] = b;
             }
         }
@@ -1081,7 +1082,20 @@ impl From<&str> for Card {
                 .unwrap();
         }
 
+        // this kills all the optimization that i tried to do but i just wanna solve it
+        let mut hm: HashMap<u8, u8> = HashMap::new();
+        for x in cards {
+            let zero: u8 = 0;
+            hm.insert(x, *hm.get(&x).unwrap_or(&zero) + 1);
+        }
+        let hm_vec: Vec<(u8, u8)> = hm.into_iter().filter(|x| x.0 != 1).collect();
+        let mut greatest: u8 = 1;
+        if hm_vec.len() > 0 {
+            greatest = hm_vec.iter().max_by(|x, y| x.1.cmp(&y.1)).unwrap().0;
+        }
+
         let mut result_copied = cards.clone();
+        result_copied = result_copied.map(|x| if x == 1 { greatest } else { x });
         result_copied.sort_unstable();
 
         let mut dup_info = [0; 4];
@@ -1169,24 +1183,40 @@ impl PartialEq for Card {
 }
 
 #[test]
-fn name() {
-    assert_eq!(Card::from("KTJJT 84").cards, [13, 10, 11, 11, 10]);
-    assert_eq!(Card::from("KTJJT 84"), Card::from("KTJJT 84"));
-    assert!(Card::from("32T3K 84") < Card::from("KK677 84"));
-    assert!(Card::from("32T3K 84") < Card::from("KTJJT 84"));
-    assert!(Card::from("QQQJA 84") > Card::from("T55J5 84"));
-    assert!(Card::from("KK677 84") > Card::from("KTJJT 84"));
+fn test_pt2() {
+    assert_eq!(Card::from("KTJJT 84").cards, [13, 10, 1, 1, 10]);
 
+    assert_eq!(Card::from("32T3K 84").kind, CardKind::OnePair);
+    assert_eq!(Card::from("QJJQ2 84").kind, CardKind::FourOfKind);
+    assert_eq!(Card::from("T55J5 1").kind, CardKind::FourOfKind);
+    assert_eq!(Card::from("QQQJA 1").kind, CardKind::FourOfKind);
+
+    assert!(Card::from("KTJJT 1") > Card::from("QQQJA 1"));
+    assert!(Card::from("QQQJA 1") > Card::from("T55J5 1"));
+}
+
+#[test]
+fn bid() {
+    assert_eq!(Card::from("KTJJT 684").bid, 684);
     assert_eq!(Card::from("KTJJT 8").bid, 8);
     assert_eq!(Card::from("KTJJT 84").bid, 84);
-    assert_eq!(Card::from("KTJJT 684").bid, 684);
-
-    assert_eq!(Card::from("AAAAA 684").kind, CardKind::FiveOfKind);
-    assert_eq!(Card::from("AA8AA 684").kind, CardKind::FourOfKind);
-    assert_eq!(Card::from("KK677 684").kind, CardKind::TwoPair);
-    assert_eq!(Card::from("KTJJT 684").kind, CardKind::TwoPair);
-    assert_eq!(Card::from("23332 684").kind, CardKind::FullHouse);
-    assert_eq!(Card::from("TTT98 684").kind, CardKind::ThreeOfKind);
-    assert_eq!(Card::from("A23A4 684").kind, CardKind::OnePair);
-    assert_eq!(Card::from("23456 684").kind, CardKind::HighCard);
 }
+
+// #[test]
+// fn pt1() {
+//     assert_eq!(Card::from("KTJJT 84").cards, [13, 10, 11, 11, 10]);
+//     assert_eq!(Card::from("KTJJT 84"), Card::from("KTJJT 84"));
+//     assert!(Card::from("32T3K 84") < Card::from("KK677 84"));
+//     assert!(Card::from("32T3K 84") < Card::from("KTJJT 84"));
+//     assert!(Card::from("QQQJA 84") > Card::from("T55J5 84"));
+//     assert!(Card::from("KK677 84") > Card::from("KTJJT 84"));
+
+//     assert_eq!(Card::from("AAAAA 684").kind, CardKind::FiveOfKind);
+//     assert_eq!(Card::from("AA8AA 684").kind, CardKind::FourOfKind);
+//     assert_eq!(Card::from("KK677 684").kind, CardKind::TwoPair);
+//     assert_eq!(Card::from("KTJJT 684").kind, CardKind::TwoPair);
+//     assert_eq!(Card::from("23332 684").kind, CardKind::FullHouse);
+//     assert_eq!(Card::from("TTT98 684").kind, CardKind::ThreeOfKind);
+//     assert_eq!(Card::from("A23A4 684").kind, CardKind::OnePair);
+//     assert_eq!(Card::from("23456 684").kind, CardKind::HighCard);
+// }
