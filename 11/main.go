@@ -169,10 +169,11 @@ func getGals(matrix [][]rune) [][2]int {
 
 func main() {
 	matrix := parseMatrix(input)
-    gals := getGals(matrix)
+	gals := getGals(matrix)
 
-	gals = expand(gals, 0, 1000000)
-	gals = expand(gals, 1, 1000000)
+	mul := 1000000
+	gals = expand(gals, 0, mul)
+	gals = expand(gals, 1, mul)
 	fmt.Println(gals)
 
 	distances := 0
@@ -207,8 +208,8 @@ func expand(gals [][2]int, axis int, multiplier int) [][2]int {
 			continue
 		}
 		ysMap[gals[i][axis]] = struct{}{}
-		gap := gals[i][axis] - gals[i-1][axis] -1
-		if gap == 0 {
+		gap := gals[i][axis] - gals[i-1][axis] - 1
+		if gap <= 0 {
 			continue
 		}
 		if i == len(gals) {
@@ -216,7 +217,7 @@ func expand(gals [][2]int, axis int, multiplier int) [][2]int {
 		}
 		fmt.Println("increasing", gap, gals[i-1], gals[i])
 		for j := range gals[i:] {
-			gals[j+i][axis] += (multiplier-1) * gap
+			gals[j+i][axis] += (multiplier - 1) * gap
 		}
 	}
 	return gals
