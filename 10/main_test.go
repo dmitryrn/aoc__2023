@@ -17,7 +17,7 @@ func TestPipe_From(t *testing.T) {
 }
 
 func Test_GetConnectedPipe(t *testing.T) {
-    input := `
+	input := `
 .....
 .S-7.
 .|.|.
