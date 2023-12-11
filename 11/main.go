@@ -150,27 +150,29 @@ const input = `
 ..................#...........................................#.................................................#...........................
 `
 
-func main() {
-	matrix := parseMatrix(input)
-
+func getGals(matrix [][]rune) [][2]int {
 	gals := [][2]int{}
-	{
-		counter := 1
-		for y := 0; y < len(matrix); y++ {
-			for x := 0; x < len(matrix[0]); x++ {
-				if matrix[y][x] == '#' {
-					matrix[y][x] = rune(counter)
-					gals = append(gals, [2]int{x, y})
-					counter++
-				} else {
-					matrix[y][x] = 0
-				}
+	counter := 1
+	for y := 0; y < len(matrix); y++ {
+		for x := 0; x < len(matrix[0]); x++ {
+			if matrix[y][x] == '#' {
+				matrix[y][x] = rune(counter)
+				gals = append(gals, [2]int{x, y})
+				counter++
+			} else {
+				matrix[y][x] = 0
 			}
 		}
 	}
+	return gals
+}
 
-	gals = expand(gals, 0)
-	gals = expand(gals, 1)
+func main() {
+	matrix := parseMatrix(input)
+    gals := getGals(matrix)
+
+	gals = expand(gals, 0, 1000000)
+	gals = expand(gals, 1, 1000000)
 	fmt.Println(gals)
 
 	distances := 0
@@ -193,7 +195,7 @@ func main() {
 	fmt.Println(distances)
 }
 
-func expand(gals [][2]int, axis int) [][2]int {
+func expand(gals [][2]int, axis int, multiplier int) [][2]int {
 	slices.SortFunc(gals, func(a [2]int, b [2]int) int {
 		return a[axis] - b[axis]
 	})
@@ -205,8 +207,8 @@ func expand(gals [][2]int, axis int) [][2]int {
 			continue
 		}
 		ysMap[gals[i][axis]] = struct{}{}
-		gap := gals[i][axis] - gals[i-1][axis]
-		if gap <= 1 {
+		gap := gals[i][axis] - gals[i-1][axis] -1
+		if gap == 0 {
 			continue
 		}
 		if i == len(gals) {
@@ -214,7 +216,7 @@ func expand(gals [][2]int, axis int) [][2]int {
 		}
 		fmt.Println("increasing", gap, gals[i-1], gals[i])
 		for j := range gals[i:] {
-			gals[j+i][axis] += 1000000 * (gap - 1)
+			gals[j+i][axis] += (multiplier-1) * gap
 		}
 	}
 	return gals
