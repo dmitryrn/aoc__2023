@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"slices"
 	"strings"
 )
 
@@ -19,52 +20,17 @@ const input = `
 #...#.....
 `
 
-func expand(oldMatrix [][]rune) [][]rune {
-	matrix := cp(oldMatrix)
-
-	for y := 0; y < len(matrix); y++ {
-		hasGals := false
-		for x := range matrix[y] {
-			if matrix[y][x] > 0 {
-				hasGals = true
-				break
-			}
-		}
-		if !hasGals {
-			before := matrix[0:y]
-			after := make([][]rune, len(matrix[y:]))
-            copy(after, matrix[y:])
-
-			exp := 1
-			between := make([][]rune, exp)
-			for i := range between {
-				between[i] = make([]rune, len(matrix[0]))
-			}
-
-			matrix = append(before, between...)
-			matrix = append(matrix, after...)
-			y += exp
-		}
-	}
-
-	return matrix
-}
-
-func print(matrix [][]rune) {
-	for y := 0; y < len(matrix); y++ {
-		fmt.Println(matrix[y])
-	}
-}
-
 func main() {
 	matrix := parseMatrix(input)
 
+	gals := [][2]int{}
 	{
 		counter := 1
 		for y := 0; y < len(matrix); y++ {
 			for x := 0; x < len(matrix[0]); x++ {
 				if matrix[y][x] == '#' {
 					matrix[y][x] = rune(counter)
+					gals = append(gals, [2]int{x, y})
 					counter++
 				} else {
 					matrix[y][x] = 0
@@ -73,25 +39,9 @@ func main() {
 		}
 	}
 
-	matrix = expand(matrix)
-	matrix = rotate(matrix)
-	matrix = expand(matrix)
-	matrix = rotate(matrix)
-	matrix = rotate(matrix)
-	matrix = rotate(matrix)
-
-	gals := [][2]int{}
-	{
-		counter := 1
-		for y := 0; y < len(matrix); y++ {
-			for x := 0; x < len(matrix[0]); x++ {
-				if matrix[y][x] > 0 {
-					gals = append(gals, [2]int{x, y})
-					counter++
-				}
-			}
-		}
-	}
+	gals = expand(gals, 0)
+	gals = expand(gals, 1)
+	fmt.Println(gals)
 
 	distances := 0
 	pairs := map[[4]int]struct{}{}
@@ -111,6 +61,32 @@ func main() {
 		}
 	}
 	fmt.Println(distances)
+}
+
+func expand(gals [][2]int, axis int) [][2]int {
+	slices.SortFunc(gals, func(a [2]int, b [2]int) int {
+		return a[axis] - b[axis]
+	})
+
+	ysMap := map[int]struct{}{}
+	for i := 1; i < len(gals); i++ {
+		_, ok := ysMap[gals[i][axis]]
+		if ok {
+			continue
+		}
+		ysMap[gals[i][axis]] = struct{}{}
+		gap := gals[i][axis] - gals[i-1][axis]
+		if gap <= 1 {
+			continue
+		}
+		if i == len(gals) {
+			continue
+		}
+		for j := range gals[i:] {
+			gals[j+i][axis]++
+		}
+	}
+	return gals
 }
 
 func cp(matrix [][]rune) [][]rune {
